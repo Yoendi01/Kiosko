@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Inventario - Kiosko{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">📋</span> Inventario</h1>
+        <p class="page-subtitle">Control de existencias</p>
+    </div>
+    <a href="{% url 'inventario_crear' %}" class="btn btn-primary">➕ Nuevo Registro</a>
+</div>
+
+<div class="filters">
+    <form method="get">
+        <input type="text" name="q" value="{{ q }}" placeholder="🔍 Buscar producto..." class="form-input">
+        <select name="filtro" class="form-input">
+            <option value="">Todos</option>
+            <option value="bajo" {% if filtro == 'bajo' %}selected{% endif %}>Bajo stock</option>
+            <option value="agotado" {% if filtro == 'agotado' %}selected{% endif %}>Agotados</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if q or filtro %}<a href="{% url 'inventario_lista' %}" class="btn btn-secondary">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    {% if inventarios %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Mínimo</th>
+                    <th>Estado</th>
+                    <th>Actualizado</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in inventarios %}
+                <tr>
+                    <td><strong>{{ i.producto.nombre }}</strong></td>
+                    <td class="text-muted">{{ i.producto.categoria.nombre }}</td>
+                    <td>{{ i.cantidad }}</td>
+                    <td>{{ i.stock_minimo }}</td>
+                    <td>
+                        {% if i.cantidad == 0 %}
+                            <span class="badge badge-danger">Agotado</span>
+                        {% elif i.bajo_stock %}
+                            <span class="badge badge-warning">Bajo</span>
+                        {% else %}
+                            <span class="badge badge-success">OK</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted">{{ i.actualizado|date:"d/m/Y H:i" }}</td>
+                    <td class="text-right">
+                        <div class="table-actions" style="justify-content:flex-end;">
+                            <a href="{% url 'inventario_editar' i.pk %}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                            <a href="{% url 'inventario_eliminar' i.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>Sin registros de inventario</h3>
+        <p>Crea el primer registro de existencias</p>
+        <a href="{% url 'inventario_crear' %}" class="btn btn-primary">➕ Crear Registro</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

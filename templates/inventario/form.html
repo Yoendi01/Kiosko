@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ accion }} Inventario - Kiosko{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">📋</span> {{ accion }} Inventario</h1>
+        <p class="page-subtitle">Registra las existencias</p>
+    </div>
+</div>
+<div class="form-container">
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}<div class="form-errors">{{ field.errors }}</div>{% endif %}
+                </div>
+                {% endfor %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">💾 Guardar</button>
+                    <a href="{% url 'inventario_lista' %}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card confirm-card">
+    <div class="card-body">
+        <div class="confirm-icon">⚠️</div>
+        <h2>¿Quitar producto de la venta?</h2>
+        <p>Se eliminará <strong>"{{ detalle.producto.nombre }}"</strong> (x{{ detalle.cantidad }}) y se restaurará el stock.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-actions" style="justify-content:center;border:none;">
+                <button type="submit" class="btn btn-danger">🗑️ Sí, quitar</button>
+                <a href="{% url 'venta_detalle' detalle.venta.pk %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

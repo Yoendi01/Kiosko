@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% block title %}Venta {{ venta.folio }} - Kiosko{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">💰</span> Venta {{ venta.folio }}</h1>
+        <p class="page-subtitle">{{ venta.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
+    <a href="{% url 'venta_lista' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="venta-grid">
+    <div>
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Productos en la venta</h3>
+            </div>
+            {% if detalles %}
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cant.</th>
+                            <th>P. Unit.</th>
+                            <th>Subtotal</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in detalles %}
+                        <tr>
+                            <td><strong>{{ d.producto.nombre }}</strong></td>
+                            <td>{{ d.cantidad }}</td>
+                            <td>${{ d.precio_unitario|floatformat:2 }}</td>
+                            <td><strong>${{ d.subtotal|floatformat:2 }}</strong></td>
+                            <td class="text-right">
+                                <a href="{% url 'detalle_eliminar' d.pk %}" class="btn btn-danger btn-sm">🗑️</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state" style="padding:40px;">
+                <div class="empty-icon">📦</div>
+                <p>Aún no hay productos en esta venta</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>➕ Agregar producto</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" id="form-agregar-detalle">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="id_producto">Producto</label>
+                        {{ form.producto }}
+                        <div class="form-help" id="stock-info" style="margin-top:8px;display:none;">
+                            <span id="stock-text"></span>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div class="form-group">
+                            <label for="id_cantidad">Cantidad</label>
+                            {{ form.cantidad }}
+                        </div>
+                        <div class="form-group">
+                            <label for="id_precio_unitario">Precio unitario</label>
+                            {{ form.precio_unitario }}
+                            <div class="form-help">Se autocompleta al elegir el producto (puedes editarlo).</div>
+                        </div>
+                    </div>
+                    <div id="subtotal-preview" class="form-help"
+                        style="display:none;font-size:15px;margin-bottom:12px;">
+                        Subtotal: <strong id="subtotal-valor">$0.00</strong>
+                    </div>
+                    {% if form.errors %}<div class="form-errors">{{ form.errors }}</div>{% endif %}
+                    <button type="submit" class="btn btn-success">➕ Agregar</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            (function () {
+                const selectProducto = document.getElementById('id_producto');
+                const inputCantidad = document.getElementById('id_cantidad');
+                const inputPrecio = document.getElementById('id_precio_unitario');
+                const stockInfo = document.getElementById('stock-info');
+                const stockText = document.getElementById('stock-text');
+                const subtotalPreview = document.getElementById('subtotal-preview');
+                const subtotalValor = document.getElementById('subtotal-valor');
+
+                if (!selectProducto || !inputPrecio) return;
+
+                let stockActual = null;
+
+                function actualizarSubtotal() {
+                    const cantidad = parseInt(inputCantidad.value) || 0;
+                    const precio = parseFloat(inputPrecio.value) || 0;
+                    const subtotal = cantidad * precio;
+                    if (cantidad > 0 && precio > 0) {
+                        subtotalPreview.style.display = 'block';
+                        subtotalValor.textContent = '$' + subtotal.toFixed(2);
+                    } else {
+                        subtotalPreview.style.display = 'none';
+                    }
+                }
+
+                function validarStock() {
+                    if (stockActual === null) return;
+                    const cantidad = parseInt(inputCantidad.value) || 0;
+                    if (cantidad > stockActual) {
+                        stockText.innerHTML =
+                            '⚠️ <strong style="color:#ef4444;">Stock insuficiente</strong> — Disponible: ' +
+                            stockActual + ' unidades';
+                    } else {
+                        stockText.innerHTML =
+                            '📦 Stock disponible: <strong>' + stockActual + ' unidades</strong>';
+                    }
+                }
+
+                async function cargarPrecioProducto(productoId) {
+                    if (!productoId) {
+                        inputPrecio.value = '';
+                        stockInfo.style.display = 'none';
+                        stockActual = null;
+                        actualizarSubtotal();
+                        return;
+                    }
+
+                    try {
+                        const url = '/api/producto/' + productoId + '/precio/';
+                        const respuesta = await fetch(url, {
+                            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Cache-Control': 'no-cache', },
+                            cache: 'no-store',
+                        });
+                        if (!respuesta.ok) throw new Error('Error al obtener producto');
+                        const data = await respuesta.json();
+
+                        if (data.ok) {
+                            // 👇 AQUÍ se autocompleta el precio unitario
+                            inputPrecio.value = data.precio.toFixed(2);
+                            stockActual = data.stock;
+
+                            stockInfo.style.display = 'block';
+                            validarStock();
+                            actualizarSubtotal();
+
+                            console.log(data)
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+
+                // Eventos
+                selectProducto.addEventListener('change', function () {
+                    cargarPrecioProducto(this.value);
+                });
+
+                inputCantidad.addEventListener('input', function () {
+                    validarStock();
+                    actualizarSubtotal();
+                });
+
+                inputPrecio.addEventListener('input', actualizarSubtotal);
+
+                // Si el select ya tiene valor (ej. tras un error de validación), cargarlo
+                // Solo cargar si hay un valor válido Y NO es la opción vacía
+                if (selectProducto.value && selectProducto.value !== '') {
+                    // Verificar además que el value sea un número real
+                    const esNumerico = /^\d+$/.test(selectProducto.value);
+                    if (esNumerico) {
+                        console.log('[Kiosko] Cargando precio inicial para producto:', selectProducto.value);
+                        cargarPrecioProducto(selectProducto.value);
+                    }
+                }
+            })();
+        </script>
+    </div>
+
+    <div>
+        <div class="venta-total-box">
+            <div class="total-label">Total de la venta</div>
+            <div class="total-value">${{ venta.total|floatformat:2 }}</div>
+            <div class="total-sub">{{ detalles|length }} producto(s)</div>
+        </div>
+        {% if venta.notas %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3>📝 Notas</h3>
+            </div>
+            <div class="card-body">
+                <p>{{ venta.notas }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Ventas - Kiosko{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">💰</span> Ventas</h1>
+        <p class="page-subtitle">Historial de transacciones</p>
+    </div>
+    <a href="{% url 'venta_crear' %}" class="btn btn-primary">➕ Nueva Venta</a>
+</div>
+
+<div class="filters">
+    <form method="get">
+        <input type="text" name="q" value="{{ q }}" placeholder="🔍 Buscar folio o notas..." class="form-input">
+        <input type="date" name="desde" value="{{ desde }}" class="form-input" title="Desde">
+        <input type="date" name="hasta" value="{{ hasta }}" class="form-input" title="Hasta">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if q or desde or hasta %}<a href="{% url 'venta_lista' %}" class="btn btn-secondary">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card success">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Total filtrado</div>
+        <div class="stat-value">${{ total_filtrado|floatformat:2 }}</div>
+        <div class="stat-sub">{{ ventas|length }} venta(s)</div>
+    </div>
+</div>
+
+<div class="table-container">
+    {% if ventas %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Fecha</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in ventas %}
+                <tr>
+                    <td><strong>{{ v.folio }}</strong></td>
+                    <td>{{ v.fecha|date:"d/m/Y H:i" }}</td>
+                    <td><span class="badge badge-info">{{ v.num_items }}</span></td>
+                    <td><strong>${{ v.total|floatformat:2 }}</strong></td>
+                    <td class="text-right">
+                        <div class="table-actions" style="justify-content:flex-end;">
+                            <a href="{% url 'venta_detalle' v.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
+                            <a href="{% url 'venta_editar' v.pk %}" class="btn btn-warning btn-sm">✏️</a>
+                            <a href="{% url 'venta_eliminar' v.pk %}" class="btn btn-danger btn-sm">🗑️</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">💰</div>
+        <h3>Sin ventas</h3>
+        <p>Registra tu primera venta</p>
+        <a href="{% url 'venta_crear' %}" class="btn btn-primary">➕ Nueva Venta</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

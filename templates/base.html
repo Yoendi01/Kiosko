@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Kiosko{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1><span class="logo-icon">🏪</span> Kiosko</h1>
+                <p>Sistema de Gestión</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{% url 'dashboard' %}" class="nav-link {% if seccion == 'dashboard' %}active{% endif %}"><span class="icon">📊</span> Dashboard</a></li>
+                <li><a href="{% url 'producto_lista' %}" class="nav-link {% if seccion == 'productos' %}active{% endif %}"><span class="icon">📦</span> Productos</a></li>
+                <li><a href="{% url 'categoria_lista' %}" class="nav-link {% if seccion == 'categorias' %}active{% endif %}"><span class="icon">🏷️</span> Categorías</a></li>
+                <li><a href="{% url 'inventario_lista' %}" class="nav-link {% if seccion == 'inventario' %}active{% endif %}"><span class="icon">📋</span> Inventario</a></li>
+                <li><a href="{% url 'venta_lista' %}" class="nav-link {% if seccion == 'ventas' %}active{% endif %}"><span class="icon">💰</span> Ventas</a></li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li class="message {{ message.tags }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

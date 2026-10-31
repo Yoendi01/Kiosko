@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Kiosko{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">📊</span> Dashboard</h1>
+        <p class="page-subtitle">Resumen general de tu kiosko</p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Productos</div>
+        <div class="stat-value">{{ total_productos }}</div>
+        <div class="stat-sub">registrados</div>
+    </div>
+    <div class="stat-card pink">
+        <div class="stat-icon">🏷️</div>
+        <div class="stat-label">Categorías</div>
+        <div class="stat-value">{{ total_categorias }}</div>
+        <div class="stat-sub">en el sistema</div>
+    </div>
+    <div class="stat-card success">
+        <div class="stat-icon">💰</div>
+        <div class="stat-label">Ventas Hoy</div>
+        <div class="stat-value">${{ ventas_hoy_total|floatformat:2 }}</div>
+        <div class="stat-sub">{{ ventas_hoy_cantidad }} transacciones</div>
+    </div>
+    <div class="stat-card warning">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">Últimos 7 días</div>
+        <div class="stat-value">${{ ventas_semana_total|floatformat:2 }}</div>
+        <div class="stat-sub">{{ ventas_semana_cantidad }} transacciones</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>⚠️ Productos con Bajo Stock</h3>
+    </div>
+    <div class="card-body">
+        {% if productos_bajo_stock %}
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Stock Mínimo</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in productos_bajo_stock %}
+                        <tr>
+                            <td><strong>{{ item.producto.nombre }}</strong></td>
+                            <td>{{ item.cantidad }}</td>
+                            <td>{{ item.stock_minimo }}</td>
+                            <td>
+                                {% if item.cantidad == 0 %}
+                                    <span class="badge badge-danger">Agotado</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Bajo</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <a href="{% url 'inventario_editar' item.pk %}" class="btn btn-secondary btn-sm">Reabastecer</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <h3>Todo en orden</h3>
+                <p>No hay productos con bajo stock</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
