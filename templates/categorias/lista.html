@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Categorías - Kiosko{% endblock %}
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><span class="title-icon">🏷️</span> Categorías</h1>
+        <p class="page-subtitle">Gestiona las categorías de tus productos</p>
+    </div>
+    <a href="{% url 'categoria_crear' %}" class="btn btn-primary">➕ Nueva Categoría</a>
+</div>
+
+<div class="filters">
+    <form method="get">
+        <input type="text" name="q" value="{{ q }}" placeholder="🔍 Buscar categoría..." class="form-input">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        {% if q %}<a href="{% url 'categoria_lista' %}" class="btn btn-secondary">Limpiar</a>{% endif %}
+    </form>
+</div>
+
+<div class="table-container">
+    {% if categorias %}
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Color</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Productos</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in categorias %}
+                <tr>
+                    <td><span
+                            style="display:inline-block;width:24px;height:24px;border-radius:6px; background: {{ c.color }} ; border:1px solid #e2e8f0;"></span>
+                    </td>
+                    <td><strong>{{ c.nombre }}</strong></td>
+                    <td class="text-muted">{{ c.descripcion|default:"—" }}</td>
+                    <td><span class="badge badge-info">{{ c.num_productos }}</span></td>
+                    <td class="text-right">
+                        <div class="table-actions" style="justify-content:flex-end;">
+                            <a href="{% url 'categoria_editar' c.pk %}" class="btn btn-warning btn-sm">✏️ Editar</a>
+                            <a href="{% url 'categoria_eliminar' c.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🏷️</div>
+        <h3>Sin categorías</h3>
+        <p>Crea tu primera categoría para organizar los productos</p>
+        <a href="{% url 'categoria_crear' %}" class="btn btn-primary">➕ Crear Categoría</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
