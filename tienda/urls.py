@@ -32,6 +32,6 @@ urlpatterns = [
     path('api/producto/<int:pk>/precio/', views.api_precio_producto, name='api_precio_producto'),
 
     # Vista de checkeo
-    path("health/", health),
+    path("health/", views.health),
 ]
 
