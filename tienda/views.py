@@ -7,6 +7,7 @@ from datetime import timedelta
 from decimal import Decimal
 from django.http import JsonResponse  # <-- agregar arriba con los demás imports
 from django.views.decorators.cache import never_cache
+from django.http import HttpResponse
 
 
 from .models import Categoria, Producto, Inventario, Venta, DetalleVenta
@@ -359,3 +360,7 @@ def api_precio_producto(request, pk):
         })
     except Producto.DoesNotExist:
         return JsonResponse({'ok': False, 'error': 'Producto no encontrado'}, status=404)
+    
+# Vista de checkeo
+def health(request):
+    return HttpResponse("ok", content_type="text/plain")

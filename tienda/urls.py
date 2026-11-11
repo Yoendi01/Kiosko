@@ -30,4 +30,8 @@ urlpatterns = [
     path('ventas/<int:pk>/eliminar/', views.venta_eliminar, name='venta_eliminar'),
     path('detalles/<int:pk>/eliminar/', views.detalle_eliminar, name='detalle_eliminar'),
     path('api/producto/<int:pk>/precio/', views.api_precio_producto, name='api_precio_producto'),
+
+    # Vista de checkeo
+    path("health/", health),
 ]
+
